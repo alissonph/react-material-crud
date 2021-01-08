@@ -5,7 +5,7 @@ import Alert from '@material-ui/lab/Alert';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    marginTop: theme.spacing(8),
+    marginTop: theme.spacing(2),
     padding: theme.spacing(5, 2),
     display: 'flex',
     flexDirection: 'column',
@@ -20,12 +20,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function App() {
+function Login() {
   const classes = useStyles();
   const [state, setState] = useState({loading: false, email: '', password: ''})
   const [error, setError] = useState({visible: false, message: ''});
 
-  const handleSubmit = () =>{
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) =>{
+    event.preventDefault();
     setState({...state, loading: true});
 
     setTimeout(() => {
@@ -49,11 +50,7 @@ function App() {
             Entrar no Sistema
           </Typography>
           <form className={classes.form} onSubmit={handleSubmit}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
+            <TextField variant="outlined" margin="normal" fullWidth required
               label="E-mail"
               type="email"
               id="email"
@@ -63,11 +60,7 @@ function App() {
               //error
               autoFocus
             />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
+            <TextField variant="outlined" margin="normal" fullWidth required
               label="Senha"
               type="password"
               id="password"
@@ -112,4 +105,4 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
