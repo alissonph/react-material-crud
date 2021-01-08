@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import { CircularProgress, Container, FormControl, Grid, InputLabel, makeStyles, MenuItem, Paper, Select, Snackbar, TextField, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
+
+//import { RootState } from '../redux/reducers';
+import { register } from '../redux/actions/user';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -21,6 +25,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Cadastro() {
+  //const { user } = useSelector((store: RootState) => store);
+  const dispatch = useDispatch();
   const classes = useStyles();
   const [state, setState] = useState({loading: false, name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
   const [error, setError] = useState({visible: false, message: ''});
@@ -29,9 +35,15 @@ function Cadastro() {
     event.preventDefault();
     setState({...state, loading: true});
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if(state.password !== state.passwordConfirmation){
         setError({visible: true, message: 'As senhas estão diferentes'});
+      }else{
+        await dispatch(await register({
+          name: state.name,
+          email: state.email,
+          password: state.password
+        }));
       }
       setState({...state, loading: false});
     },2000);
