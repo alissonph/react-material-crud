@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import { CircularProgress, Container, FormControl, Grid, InputLabel, makeStyles, MenuItem, Paper, Select, Snackbar, TextField, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
-//import { RootState } from '../redux/reducers';
-import { register } from '../redux/actions/user';
+//import { IAuthReduxProps } from '../types';
+import { RootState } from '../redux/reducers';
+import { register } from '../redux/actions/auth';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -25,28 +26,24 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Cadastro() {
-  //const { user } = useSelector((store: RootState) => store);
+  const { auth, error } = useSelector((store: RootState) => store);
   const dispatch = useDispatch();
   const classes = useStyles();
-  const [state, setState] = useState({loading: false, name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
-  const [error, setError] = useState({visible: false, message: ''});
+  const [state, setState] = useState({name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
+  const [errorAlert, setErrorAlert] = useState({visible: false, message: ''});
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) =>{
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) =>{
     event.preventDefault();
-    setState({...state, loading: true});
 
-    setTimeout(async () => {
-      if(state.password !== state.passwordConfirmation){
-        setError({visible: true, message: 'As senhas estão diferentes'});
-      }else{
-        await dispatch(await register({
-          name: state.name,
-          email: state.email,
-          password: state.password
-        }));
-      }
-      setState({...state, loading: false});
-    },2000);
+    if(state.password !== state.passwordConfirmation){
+      setErrorAlert({visible: true, message: 'As senhas estão diferentes'});
+    }else{
+      dispatch(await register({
+        name: state.name,
+        email: state.email,
+        password: state.password
+      }));
+    }
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,6 +55,17 @@ function Cadastro() {
       setState({...state, [event.target.name]: event.target.value});
     }
   }
+
+  const closeErrorAlert = () => {
+    console.log('closeErrorAlert')
+    setErrorAlert({...errorAlert, visible: false})
+  }
+
+  useEffect(() => {
+    if(error.id === 'REGISTER_FAIL'){
+      setErrorAlert({visible: true, message: error.msg});
+    }
+  }, [error]);
 
   return (
     <Container component="main" maxWidth="sm">
@@ -129,16 +137,16 @@ function Cadastro() {
               fullWidth
               variant="contained"
               color="primary"
-              disabled={state.loading}
+              disabled={auth.isLoading}
               className={classes.submit}>
-              {!state.loading && 'Confirmar'}
-              {state.loading && <CircularProgress color="primary" size={25} />}
+              {!auth.isLoading && 'Confirmar'}
+              {auth.isLoading && <CircularProgress color="primary" size={25} />}
             </Button>
           </form>
 
-          <Snackbar open={error.visible} autoHideDuration={6000} onClose={()=> setError({...error, visible: false})}>
+          <Snackbar open={errorAlert.visible} autoHideDuration={6000} onClose={closeErrorAlert}>
             <Alert severity="error" elevation={6} variant="filled">
-              {error.message}
+              {errorAlert.message}
             </Alert>
           </Snackbar>
       </Paper>

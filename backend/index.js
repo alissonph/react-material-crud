@@ -12,5 +12,5 @@ consign()
   .into(app)
 
 app.listen(port, () => {
-  console.log('Servidor online')
+  console.log('Servidor online porta: '+port)
 })
