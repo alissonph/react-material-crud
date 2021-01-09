@@ -1,7 +1,6 @@
 import {
     USER_LOADED,
     USER_LOADING,
-    AUTH_ERROR,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT_SUCCESS,
@@ -40,7 +39,6 @@ export const authReducer = (state = INITIAL_STATE, action: IAction) => {
         isAuthenticated: true,
         isLoading: false,
       };
-    case AUTH_ERROR:
     case LOGIN_FAIL:
     case LOGOUT_SUCCESS:
     case REGISTER_FAIL:

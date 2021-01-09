@@ -4,11 +4,10 @@ import Button from '@material-ui/core/Button';
 import { CircularProgress, Container, FormControl, Grid, InputLabel, makeStyles, MenuItem, Paper, Select, Snackbar, TextField, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 
-//import { IAuthReduxProps } from '../types';
 import { RootState } from '../redux/reducers';
 import { register } from '../redux/actions/auth';
 import { clearErrors, returnErrors } from '../redux/actions/error';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -29,6 +28,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Register: React.FC = () => {
   let history = useHistory();
+  const location = useLocation();
   const { auth, error } = useSelector((store: RootState) => store);
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -39,13 +39,19 @@ const Register: React.FC = () => {
     if(state.password !== state.passwordConfirmation){
       dispatch(returnErrors('As senhas estão diferentes', 0, 'REGISTER_FAIL'));
     }else{
-      dispatch(await register({
+      const userNew = {
         name: state.name,
         email: state.email,
         sex: state.sex,
         birthDate: new Date(state.birthDate),
         password: state.password
-      }));
+      }
+      if(location.pathname.includes("cadastro")){
+        dispatch(await register(userNew));
+      }else if(location.pathname.includes("editarPerfil")){
+        //TODO - funcao para editar usuario
+        dispatch(returnErrors('Edição do cadastro ainda não implementado', 0, 'REGISTER_FAIL'));
+      }
     }
   }
 
@@ -64,10 +70,24 @@ const Register: React.FC = () => {
   }
 
   useEffect(() => {
-    if(auth.isAuthenticated){
+    if(auth.isAuthenticated && location.pathname.includes("cadastro")){
       history.push('/usuario');
     }
-  }, [history, auth.isAuthenticated]);
+  }, [auth.isAuthenticated, history, location.pathname]);
+
+  useEffect(() => {
+    if(location.pathname.includes("editarPerfil")){
+      setState({
+        ...state,
+        name: auth.user.name,
+        email: auth.user.email,
+        sex: auth.user.sex,
+        birthDate: new Date(auth.user.birthDate).toLocaleDateString("pt-BR").split("/").reverse().join("-")
+      })
+    }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
     <Container component="main" maxWidth="sm">

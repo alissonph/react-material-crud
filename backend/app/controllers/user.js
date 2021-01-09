@@ -21,7 +21,7 @@ module.exports = app => {
 
     try {
       if(await User.findOne({ email })) {
-        return res.status(400).send({ error: 'User already exists.' })
+        return res.status(400).send({ error: 'Usuário já cadastrado.' })
       }
       const user = new User(req.body)
       await user.save()
@@ -34,7 +34,7 @@ module.exports = app => {
       })
 
     } catch(err) {
-      return res.status(400).send({ error: 'Registration failed.' })
+      return res.status(400).send({ error: 'Falha ao registrar. Detalhes: '+err })
     }
   }
 
@@ -45,11 +45,11 @@ module.exports = app => {
     const user = await User.findOne({ email }).select('+password')
     
     if(!user) {
-      return res.status(400).send({ error: 'User not found.' })
+      return res.status(400).send({ error: 'Usuário não encontrado.' })
     }
 
     if(!await bcrypt.compare(password, user.password)) {
-      return res.status(400).send({ error: 'Invalid password.' })
+      return res.status(400).send({ error: 'Senha inválida.' })
     }
 
     user.password = undefined 
@@ -62,7 +62,12 @@ module.exports = app => {
 
   // user profile
   const userProfile = async (req, res) => {
-    res.send({ ok: true, user: req.userId})
+    const user = await User.findOne({ _id : req.userId });
+
+    if(!user)
+        return res.status(400).send({ error: 'Usuário não encontrado.'} )
+
+    res.send({ ok: true, user})
   }
 
   // forgot password
@@ -73,7 +78,7 @@ module.exports = app => {
       const user = await User.findOne({ email })
 
       if(!user)
-        return res.status(400).send({ error: 'User not found.'} )
+        return res.status(400).send({ error: 'Usuário não encontrado.'} )
 
       const token = crypto.randomBytes(20).toString('hex')
 
@@ -94,9 +99,9 @@ module.exports = app => {
         text: `Utilize o token ${ token } para resetar sua senha`,
       }, (err) => {
         if(err)
-          return res.status(400).send({ error: 'Cannot send forgot password email' })
+          return res.status(400).send({ error: 'Não foi possível enviar o e-mail. Detalhes: '+err })
 
-        return res.status(200).send({ message: "Email send successfully" })
+        return res.status(200).send({ message: "E-mail enviado com sucesso." })
       })
       
     } catch(err) {
@@ -114,23 +119,23 @@ module.exports = app => {
         .select('+passwordResetToken passwordResetExpires')
 
       if(!user)
-        return res.status(400).send({ error: 'User not found.' })
+        return res.status(400).send({ error: 'Usuário não encontrado.' })
 
       if(token !== user.passwordResetToken)
-        return res.status(400).send({ error: 'Token invalid.' })
+        return res.status(400).send({ error: 'Token inválido.' })
 
       const now = new Date()
 
       if(now > user.passwordResetExpires) 
-        return res.status(400).send({ error: 'Token expired, generate a new token.'})
+        return res.status(400).send({ error: 'Token expirado, por favor gerar um novo token.'})
 
       user.password = password
 
       await user.save()
 
-      res.status(200).send({ message: 'Updated password'})
+      res.status(200).send({ message: 'Senha atualizada com sucesso.'})
     } catch (err) {
-      res.status(400).send({ error: 'Cannot reset password, try again.' })
+      res.status(400).send({ error: 'Não foi possível resetar a senha, tente novamente. Detalhes: '+err })
     }
   }
 

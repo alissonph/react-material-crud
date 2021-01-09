@@ -17,7 +17,7 @@ module.exports = () => {
     const [ bearer, token ] = parts
 
     if(!/^Bearer$/i.test(bearer))
-      return res.status('401').send({ error: 'Token malformatado' })
+      return res.status('401').send({ error: 'Token mal formatado' })
 
     jwt.verify(token, jwt_key, (err, decoded) => {
       if(err) 

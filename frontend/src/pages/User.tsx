@@ -29,6 +29,10 @@ const Login: React.FC = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   
+  const handleClickEdit = () => {
+    history.push('/editarPerfil');
+  }
+  
   const handleClickLogout = () => {
     dispatch(logout());
   }
@@ -48,11 +52,14 @@ const Login: React.FC = () => {
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Typography variant="body2" gutterBottom>
-              Token: {auth.token}
+              Token JWT: {auth.token}
             </Typography>
           </Grid>
         </Grid>
         <Box alignSelf="flex-end">
+          <Button variant="contained" color="secondary" size="medium" onClick={handleClickEdit} className={classes.button} startIcon={<ExitToAppIcon />}>
+            Editar Cadastro
+          </Button>
           <Button variant="contained" color="primary" size="medium" onClick={handleClickLogout} className={classes.button} startIcon={<ExitToAppIcon />}>
             Sair
           </Button>

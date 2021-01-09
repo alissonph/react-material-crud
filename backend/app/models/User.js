@@ -16,14 +16,16 @@ module.exports = () => {
     },
     sex: {
       type: String,
+      required: true,
     },
     birthDate: {
       type: Date,
+      required: true,
     },
     password: {
       type: String,
       required: true,
-      minLength: 7,
+      minLength: 3,
       select: false
     },
     passwordResetToken: {
