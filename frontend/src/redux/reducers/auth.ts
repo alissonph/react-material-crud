@@ -10,11 +10,14 @@ import {
 } from "../actions/auth";
 import { IAction, IStateAuth } from "../../types";
 
+const token = localStorage.getItem("jwt_token");
+const user = localStorage.getItem("user");
+
 const INITIAL_STATE: IStateAuth = {
-  token: localStorage.getItem("token"),
-  isAuthenticated: false,
+  token: localStorage.getItem("jwt_token"),
+  isAuthenticated: token ? true : false,
   isLoading: false,
-  user: null,
+  user: user ? JSON.parse(user) : null,
 };
 
 export const authReducer = (state = INITIAL_STATE, action: IAction) => {
@@ -33,7 +36,8 @@ export const authReducer = (state = INITIAL_STATE, action: IAction) => {
       };
     case LOGIN_SUCCESS:
     case REGISTER_SUCCESS:
-      localStorage.setItem("token", action.payload.token);
+      localStorage.setItem("jwt_token", action.payload.token);
+      localStorage.setItem("user", JSON.stringify(action.payload.user));
       return {
         ...state,
         token: action.payload.token,
@@ -45,7 +49,8 @@ export const authReducer = (state = INITIAL_STATE, action: IAction) => {
     case LOGIN_FAIL:
     case LOGOUT_SUCCESS:
     case REGISTER_FAIL:
-      localStorage.removeItem("token");
+      localStorage.removeItem("jwt_token");
+      localStorage.removeItem("user");
       return {
         ...state,
         token: null,

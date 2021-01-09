@@ -7,6 +7,8 @@ import Alert from '@material-ui/lab/Alert';
 //import { IAuthReduxProps } from '../types';
 import { RootState } from '../redux/reducers';
 import { register } from '../redux/actions/auth';
+import { clearErrors, returnErrors } from '../redux/actions/error';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -25,22 +27,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Cadastro() {
+const Register: React.FC = () => {
+  let history = useHistory();
   const { auth, error } = useSelector((store: RootState) => store);
   const dispatch = useDispatch();
   const classes = useStyles();
   const [state, setState] = useState({name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
-  const [errorAlert, setErrorAlert] = useState({visible: false, message: ''});
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) =>{
     event.preventDefault();
 
     if(state.password !== state.passwordConfirmation){
-      setErrorAlert({visible: true, message: 'As senhas estão diferentes'});
+      dispatch(returnErrors('As senhas estão diferentes', 0, 'REGISTER_FAIL'));
     }else{
       dispatch(await register({
         name: state.name,
         email: state.email,
+        sex: state.sex,
+        birthDate: new Date(state.birthDate),
         password: state.password
       }));
     }
@@ -57,15 +60,14 @@ function Cadastro() {
   }
 
   const closeErrorAlert = () => {
-    console.log('closeErrorAlert')
-    setErrorAlert({...errorAlert, visible: false})
+    dispatch(clearErrors());
   }
 
   useEffect(() => {
-    if(error.id === 'REGISTER_FAIL'){
-      setErrorAlert({visible: true, message: error.msg});
+    if(auth.isAuthenticated){
+      history.push('/usuario');
     }
-  }, [error]);
+  }, [history, auth.isAuthenticated]);
 
   return (
     <Container component="main" maxWidth="sm">
@@ -110,6 +112,8 @@ function Cadastro() {
                   id="birthDate"
                   label="Data de Nascimento"
                   type="date"
+                  value={state.birthDate}
+                  onChange={handleChange}
                   InputLabelProps={{
                     shrink: true,
                   }}
@@ -144,9 +148,9 @@ function Cadastro() {
             </Button>
           </form>
 
-          <Snackbar open={errorAlert.visible} autoHideDuration={6000} onClose={closeErrorAlert}>
+          <Snackbar open={error.id === 'REGISTER_FAIL'} autoHideDuration={6000} onClose={closeErrorAlert}>
             <Alert severity="error" elevation={6} variant="filled">
-              {errorAlert.message}
+              {error.msg}
             </Alert>
           </Snackbar>
       </Paper>
@@ -154,4 +158,4 @@ function Cadastro() {
   );
 }
 
-export default Cadastro;
+export default Register;

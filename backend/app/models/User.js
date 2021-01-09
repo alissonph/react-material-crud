@@ -14,6 +14,12 @@ module.exports = () => {
       required: true,
       lowercase: true
     },
+    sex: {
+      type: String,
+    },
+    birthDate: {
+      type: Date,
+    },
     password: {
       type: String,
       required: true,

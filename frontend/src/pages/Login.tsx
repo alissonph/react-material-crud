@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link as LinkRouter, useHistory } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { Checkbox, CircularProgress, Container, FormControlLabel, Grid, Link, makeStyles, Paper, Snackbar, TextField, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
+import { RootState } from '../redux/reducers';
+import { clearErrors } from '../redux/actions/error';
+import { login } from '../redux/actions/auth';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -20,28 +25,34 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Login() {
+const Login: React.FC = () => {
+  let history = useHistory();
+  const { auth, error } = useSelector((store: RootState) => store);
+  const dispatch = useDispatch();
   const classes = useStyles();
-  const [state, setState] = useState({loading: false, email: '', password: ''})
-  const [error, setError] = useState({visible: false, message: ''});
+  const [state, setState] = useState({email: '', password: ''})
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) =>{
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) =>{
     event.preventDefault();
-    setState({...state, loading: true});
-
-    setTimeout(() => {
-      if(state.email === 'alissonphausmann@hotmail.com' && state.password === '123'){
-
-      }else{
-        setError({visible: true, message: 'E-mail ou senha incorretos.'});
-      }
-      setState({...state, loading: false});
-    },2000);
+    dispatch(await login({
+      email: state.email,
+      password: state.password
+    }));
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setState({...state, [event.target.id]: event.target.value});
   }
+
+  const closeErrorAlert = () => {
+    dispatch(clearErrors());
+  }
+
+  useEffect(() => {
+    if(auth.isAuthenticated){
+      history.push('/usuario');
+    }
+  }, [history, auth.isAuthenticated]);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -76,28 +87,28 @@ function Login() {
               fullWidth
               variant="contained"
               color="primary"
-              disabled={state.loading}
+              disabled={auth.isLoading}
               className={classes.submit}>
-              {!state.loading && 'Entrar'}
-              {state.loading && <CircularProgress color="primary" size={25} />}
+              {!auth.isLoading && 'Entrar'}
+              {auth.isLoading && <CircularProgress color="primary" size={25} />}
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#">
+                <Link component={LinkRouter} to="/">
                   Esqueceu a senha?
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#">
+                <Link component={LinkRouter} to="/cadastro">
                   Cadastre-se
                 </Link>
               </Grid>
             </Grid>
           </form>
 
-          <Snackbar open={error.visible} autoHideDuration={6000} onClose={()=> setError({...error, visible: false})}>
+          <Snackbar open={error.id === 'LOGIN_FAIL'} autoHideDuration={6000} onClose={closeErrorAlert}>
             <Alert severity="error" elevation={6} variant="filled">
-              {error.message}
+              {error.msg}
             </Alert>
           </Snackbar>
       </Paper>

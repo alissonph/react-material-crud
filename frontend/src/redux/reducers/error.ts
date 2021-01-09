@@ -1,8 +1,8 @@
 import { GET_ERRORS, CLEAR_ERRORS } from '../actions/error';
-import { IAction } from '../../types';
+import { IAction, IStateError } from '../../types';
 
-const INITIAL_STATE = {
-  msg: {},
+const INITIAL_STATE: IStateError = {
+  msg: '',
   status: null,
   id: null
 };
@@ -16,8 +16,9 @@ export const errorReducer = (state = INITIAL_STATE, action: IAction) => {
         id: action.payload.id
       };
     case CLEAR_ERRORS:
+      console.log("clear")
       return {
-        msg: {},
+        msg: '',
         status: null,
         id: null
       };

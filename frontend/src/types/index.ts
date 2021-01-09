@@ -9,3 +9,9 @@ export interface IStateAuth {
   isLoading: boolean;
   user: object | null;
 }
+
+export interface IStateError {
+  msg: string;
+  status: number | null;
+  id: string | null;
+}

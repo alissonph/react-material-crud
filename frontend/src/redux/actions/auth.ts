@@ -14,13 +14,30 @@ export const register = (user: object) => async (dispatch: any) => {
   dispatch({type: USER_LOADING});
   try {
     const response = await api.post("/register", user);
-    console.log("Response: ", response.data);
     dispatch({ type: REGISTER_SUCCESS, payload: response.data });
   } catch (error) {
-    console.log("Error:" + error.response.data.error);
     dispatch(
-      returnErrors(error.response.data.error, error.response.status, 'REGISTER_FAIL')
+      returnErrors(error.response ? error?.response?.data?.error : error.toString(), error?.response?.status, 'REGISTER_FAIL')
     );
     dispatch({ type: REGISTER_FAIL });
   }
+};
+
+export const login = (user: object) => async (dispatch: any) => {
+  dispatch({type: USER_LOADING});
+  try {
+    const response = await api.post("/auth", user);
+    dispatch({ type: LOGIN_SUCCESS, payload: response.data });
+  } catch (error) {
+    dispatch(
+      returnErrors(error.response ? error?.response?.data?.error : error.toString(), error?.response?.status, 'LOGIN_FAIL')
+    );
+    dispatch({ type: LOGIN_FAIL });
+  }
+};
+
+export const logout = () => {
+  return {
+    type: LOGOUT_SUCCESS
+  };
 };
