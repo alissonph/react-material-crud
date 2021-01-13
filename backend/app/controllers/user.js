@@ -67,7 +67,21 @@ module.exports = app => {
     if(!user)
         return res.status(400).send({ error: 'Usuário não encontrado.'} )
 
-    res.send({ ok: true, user})
+    res.send(user)
+  }
+
+  const updateUser = async (req, res) => {
+    const { name, email, sex, birthDate } = req.body;
+    try{
+      const user = await User.findByIdAndUpdate(req.userId, { name, email, sex, birthDate }, { new: true })
+
+      if(!user)
+        return res.status(400).send({ error: 'Usuário não encontrado.'} )
+
+      res.send(user)
+    }catch(error){
+      return res.status(400).send({ error: 'Erro ao atualizar usuário.' })
+    } 
   }
 
   // forgot password
@@ -139,5 +153,5 @@ module.exports = app => {
     }
   }
 
-  return { register, auth, userProfile, forgotPassword, resetPassword }
+  return { register, auth, userProfile, updateUser, forgotPassword, resetPassword }
 }

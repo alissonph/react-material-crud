@@ -5,7 +5,7 @@ import { CircularProgress, Container, FormControl, Grid, InputLabel, makeStyles,
 import Alert from '@material-ui/lab/Alert';
 
 import { RootState } from '../redux/reducers';
-import { register } from '../redux/actions/auth';
+import { loadUser, register, updateUser } from '../redux/actions/auth';
 import { clearErrors, returnErrors } from '../redux/actions/error';
 import { useHistory, useLocation } from 'react-router-dom';
 
@@ -21,8 +21,8 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     marginTop: theme.spacing(1),
   },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
+  containerSubmit: {
+    margin: theme.spacing(3, 0, 1),
   },
 }));
 
@@ -32,7 +32,7 @@ const Register: React.FC = () => {
   const { auth, error } = useSelector((store: RootState) => store);
   const dispatch = useDispatch();
   const classes = useStyles();
-  const [state, setState] = useState({name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
+  const [state, setState] = useState({mode: '', name: '', sex: '', birthDate: '', email: '', password: '', passwordConfirmation: ''})
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) =>{
     event.preventDefault();
 
@@ -46,11 +46,10 @@ const Register: React.FC = () => {
         birthDate: new Date(state.birthDate),
         password: state.password
       }
-      if(location.pathname.includes("cadastro")){
-        dispatch(await register(userNew));
-      }else if(location.pathname.includes("editarPerfil")){
-        //TODO - funcao para editar usuario
-        dispatch(returnErrors('Edição do cadastro ainda não implementado', 0, 'REGISTER_FAIL'));
+      if(state.mode === 'INSERT'){
+        dispatch(register(userNew));
+      }else if(state.mode === 'UPDATE'){
+        dispatch(updateUser(userNew));
       }
     }
   }
@@ -70,13 +69,19 @@ const Register: React.FC = () => {
   }
 
   useEffect(() => {
-    if(auth.isAuthenticated && location.pathname.includes("cadastro")){
+    if(auth.isAuthenticated && state.mode === 'INSERT'){
       history.push('/usuario');
     }
-  }, [auth.isAuthenticated, history, location.pathname]);
+  }, [auth.isAuthenticated, history, location.pathname, state.mode]);
 
   useEffect(() => {
-    if(location.pathname.includes("editarPerfil")){
+    if(state.mode === 'UPDATE'){
+      dispatch(loadUser());
+    }
+  }, [dispatch, location.pathname, state.mode]);
+
+  useEffect(() => {
+    if(state.mode === 'UPDATE' && auth.user){
       setState({
         ...state,
         name: auth.user.name,
@@ -85,9 +90,19 @@ const Register: React.FC = () => {
         birthDate: new Date(auth.user.birthDate).toLocaleDateString("pt-BR").split("/").reverse().join("-")
       })
     }
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [location.pathname, auth.user])
+
+  useEffect(() => {
+    let mode = '';
+    if(location.pathname.includes("cadastro")){
+      mode = 'INSERT';
+    }else if(location.pathname.includes("editarPerfil")){
+      mode = 'UPDATE';
+    }
+    setState({...state, mode})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   return (
     <Container component="main" maxWidth="sm">
@@ -140,33 +155,60 @@ const Register: React.FC = () => {
                 />
               </Grid>
             </Grid>
-            <TextField variant="outlined" margin="normal" fullWidth required
-              label="Senha"
-              type="password"
-              id="password"
-              value={state.password}
-              onChange={handleChange}
-            />
-            <TextField variant="outlined" margin="normal" fullWidth required
-              label="Confirmar Senha"
-              type="password"
-              id="passwordConfirmation"
-              value={state.passwordConfirmation}
-              onChange={handleChange}
-              helperText={state.password !== state.passwordConfirmation ? 'As senhas estão diferentes' : ''}
-              error={state.password !== state.passwordConfirmation}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              disabled={auth.isLoading}
-              className={classes.submit}>
-              {!auth.isLoading && 'Confirmar'}
-              {auth.isLoading && <CircularProgress color="primary" size={25} />}
-            </Button>
+            {state.mode === 'INSERT' && 
+              <React.Fragment>
+                <TextField variant="outlined" margin="normal" fullWidth required
+                  label="Senha"
+                  type="password"
+                  id="password"
+                  value={state.password}
+                  onChange={handleChange}
+                />
+                <TextField variant="outlined" margin="normal" fullWidth required
+                  label="Confirmar Senha"
+                  type="password"
+                  id="passwordConfirmation"
+                  value={state.passwordConfirmation}
+                  onChange={handleChange}
+                  helperText={state.password !== state.passwordConfirmation ? 'As senhas estão diferentes' : ''}
+                  error={state.password !== state.passwordConfirmation}
+                />
+              </React.Fragment>
+            }
+            <Grid container className={classes.containerSubmit}>
+              <Grid item xs={12} style={{ marginBottom: 10}}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  disabled={auth.isLoading}
+                  >
+                  {!auth.isLoading && 'Confirmar'}
+                  {auth.isLoading && <CircularProgress color="primary" size={25} />}
+                </Button>
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  type="button"
+                  fullWidth
+                  variant="contained"
+                  color="secondary"
+                  onClick = {() => history.goBack()}
+                  disabled={auth.isLoading}>
+                  Cancelar
+                </Button>
+              </Grid>
+            </Grid>
           </form>
+          
+          {/*
+            <Snackbar open={true} autoHideDuration={6000} onClose={closeErrorAlert}>
+              <Alert severity="success" elevation={6} variant="filled">
+                {'Teste'}
+              </Alert>
+            </Snackbar>
+          */}
 
           <Snackbar open={error.id === 'REGISTER_FAIL'} autoHideDuration={6000} onClose={closeErrorAlert}>
             <Alert severity="error" elevation={6} variant="filled">

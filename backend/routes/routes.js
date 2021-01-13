@@ -7,6 +7,7 @@ module.exports = app => {
   app.route('/user')
     .all(app.app.middlewares.authToken.authenticationJWT)
     .get(app.app.controllers.user.userProfile)
+    .put(app.app.controllers.user.updateUser)
 
   app.route('/projects')
     .all(app.app.middlewares.authToken.authenticationJWT)

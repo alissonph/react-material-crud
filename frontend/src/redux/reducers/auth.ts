@@ -1,11 +1,14 @@
 import {
     USER_LOADED,
     USER_LOADING,
+    AUTH_ERROR,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT_SUCCESS,
     REGISTER_SUCCESS,
     REGISTER_FAIL,
+    USER_UPDATE_SUCCESS,
+    USER_UPDATE_FAIL
 } from "../actions/auth";
 import { IAction, IStateAuth } from "../../types";
 
@@ -39,6 +42,13 @@ export const authReducer = (state = INITIAL_STATE, action: IAction) => {
         isAuthenticated: true,
         isLoading: false,
       };
+    case USER_UPDATE_SUCCESS:
+      return {
+        ...state,
+        user: action.payload.user,
+        isLoading: false,
+      };
+    case AUTH_ERROR:
     case LOGIN_FAIL:
     case LOGOUT_SUCCESS:
     case REGISTER_FAIL:
@@ -47,6 +57,11 @@ export const authReducer = (state = INITIAL_STATE, action: IAction) => {
         token: null,
         user: null,
         isAuthenticated: false,
+        isLoading: false,
+      };
+    case USER_UPDATE_FAIL:
+      return {
+        ...state,
         isLoading: false,
       };
     default:
